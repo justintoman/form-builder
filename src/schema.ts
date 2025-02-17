@@ -1,19 +1,7 @@
 import { z } from "zod";
 
-const FormWidthSchema = z
-  .literal(1)
-  .or(z.literal(2))
-  .or(z.literal(3))
-  .or(z.literal(4))
-  .or(z.literal(5))
-  .or(z.literal(6))
-  .or(z.literal(7))
-  .or(z.literal(8))
-  .or(z.literal(9))
-  .or(z.literal(10))
-  .or(z.literal(11))
-  .or(z.literal(12));
-
+const FormWidthSchema = z.coerce.number().int().min(1).max(12);
+export type FormWidth = z.infer<typeof FormWidthSchema>;
 /*
 
 ***Documentation on how the visiblity conditions work***

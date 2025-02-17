@@ -3,9 +3,22 @@ import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { FormSchema } from "./schema";
 import { z } from "zod";
 import { Section } from "./Section";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
 
 export function Form() {
   const methods = useForm<z.infer<typeof FormSchema>>({
+    defaultValues: {
+      title: "New Form",
+      sections: [
+        {
+          title: "Section 1",
+          collapsible: false,
+          rows: [{ fields: [{ type: "text", width: 4, title: "Field 1" }] }],
+        },
+      ],
+    },
     resolver: zodResolver(FormSchema),
   });
 
@@ -16,62 +29,59 @@ export function Form() {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
-        <label className="flex items-start flex-col space-y-2">
-          <span>Title</span>
-          <input {...methods.register("title")} />
-        </label>
+      <form
+        className="space-y-4"
+        onSubmit={methods.handleSubmit((data) => console.log(data))}
+      >
+        <div className="flex flex-row justify-between">
+          <Label className="flex items-start flex-col space-y-1">
+            <span className="text-sm font-bold">Form Title</span>
+            <Input {...methods.register("title")} />
+          </Label>
+          <Button onClick={() => console.log(methods.getValues())}>
+            Debug
+          </Button>
+        </div>
         {sections.fields.map((section, index) => (
           <div key={section.id}>
-            {"title" in section ? (
-              <div className="flex flex-row space-x-4">
-                <label className="flex items-start flex-row space-y-2">
-                  <span>Title</span>
-                  <input {...methods.register(`sections.${index}.title`)} />
-                </label>
-                <label className="flex items-start flex-col space-x-2">
-                  <span>Collapsible?</span>
-                  <input
-                    type="checkbox"
-                    {...methods.register(`sections.${index}.collapsible`)}
-                  />
-                </label>
-              </div>
-            ) : (
-              <button>Change to Titled Section</button>
-            )}
-            <div className="flex flex-row space-x-4">
-              <button type="button" onClick={() => sections.remove(index)}>
-                X
-              </button>
-              {index != 0 ? (
-                <button
-                  type="button"
-                  onClick={() => sections.swap(index, index - 1)}
-                >
-                  Up
-                </button>
-              ) : null}
-              {index != sections.fields.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={() => sections.swap(index, index + 1)}
-                >
-                  Down
-                </button>
-              ) : null}
-            </div>
-            {<Section index={index} />}
+            <Section
+              index={index}
+              section={section}
+              canMoveUp={index !== 0}
+              canMoveDown={index != sections.fields.length - 1}
+              onDelete={() => sections.remove(index)}
+              onMoveUp={() => sections.swap(index, index - 1)}
+              onMoveDown={() => sections.swap(index, index + 1)}
+              onToggleTitledSection={(titled) =>
+                sections.update(
+                  index,
+                  titled
+                    ? {
+                        title: "",
+                        collapsible: false,
+                        rows: section.rows,
+                      }
+                    : { rows: section.rows }
+                )
+              }
+            />
           </div>
         ))}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() =>
-            sections.append({ title: "Untitled", collapsible: false, rows: [] })
+            sections.append({
+              title: "New Section",
+              collapsible: false,
+              rows: [
+                { fields: [{ type: "text", width: 4, title: "Field 1" }] },
+              ],
+            })
           }
         >
           Add Section
-        </button>
+        </Button>
       </form>
     </FormProvider>
   );

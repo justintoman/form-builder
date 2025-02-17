@@ -2,8 +2,8 @@ import { Form } from "./Form";
 
 function App() {
   return (
-    <main>
-      <h1>Form Builder App</h1>
+    <main className="p-8">
+      <h1 className="text-2xl mb-10">Form Builder App</h1>
       <Form />
     </main>
   );
